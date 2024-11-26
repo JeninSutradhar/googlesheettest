@@ -1,0 +1,87 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Student Data Submission</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            max-width: 400px;
+            margin: 0 auto;
+            padding: 20px;
+            line-height: 1.6;
+        }
+        form {
+            display: flex;
+            flex-direction: column;
+        }
+        input, button {
+            margin: 10px 0;
+            padding: 10px;
+        }
+        #result {
+            margin-top: 20px;
+            padding: 10px;
+            border: 1px solid #ddd;
+            background-color: #f9f9f9;
+        }
+    </style>
+</head>
+<body>
+    <h1>Student Data Submission</h1>
+    <form id="studentForm">
+        <input type="text" id="studentId" placeholder="Student ID" required>
+        <input type="text" id="name" placeholder="Name" required>
+        <input type="number" id="marks" placeholder="Marks" required>
+        <button type="submit">Submit</button>
+    </form>
+    <div id="result"></div>
+
+    <script>
+        const SCRIPT_URL = 'https://script.google.com/macros/s/YOUR_DEPLOYMENT_ID/dev';
+
+        document.getElementById('studentForm').addEventListener('submit', async (e) => {
+            e.preventDefault();
+
+            const studentId = document.getElementById('studentId').value;
+            const name = document.getElementById('name').value;
+            const marks = document.getElementById('marks').value;
+            const resultDiv = document.getElementById('result');
+
+            // Clear the result area
+            resultDiv.textContent = "";
+
+            try {
+                // Submit data
+                const submitResponse = await fetch(`${SCRIPT_URL}?action=submit&studentId=${studentId}&name=${name}&marks=${marks}`);
+                const submitData = await submitResponse.json();
+
+                if (submitData.status === "success") {
+                    // Fetch result
+                    const fetchResponse = await fetch(`${SCRIPT_URL}?action=fetch&studentId=${studentId}`);
+                    const fetchData = await fetchResponse.json();
+
+                    if (fetchData.status === "success") {
+                        resultDiv.innerHTML = `
+                            <p><strong>Submission Successful!</strong></p>
+                            <p>Student ID: ${fetchData.studentId}</p>
+                            <p>Name: ${fetchData.name}</p>
+                            <p>Marks: ${fetchData.marks}</p>
+                            <p>Result: ${fetchData.result}</p>`;
+                        resultDiv.style.color = "green";
+                    } else {
+                        throw new Error(fetchData.message);
+                    }
+                } else {
+                    throw new Error(submitData.message);
+                }
+            } catch (error) {
+                console.error(error);
+                resultDiv.textContent = "Error: " + error.message;
+                resultDiv.style.color = "red";
+            }
+        });
+    </script>
+</body>
+</html>
