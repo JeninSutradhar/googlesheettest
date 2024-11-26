@@ -41,47 +41,48 @@
     <script>
         const SCRIPT_URL = 'https://script.google.com/macros/s/YOUR_DEPLOYMENT_ID/dev';
 
-        document.getElementById('studentForm').addEventListener('submit', async (e) => {
-            e.preventDefault();
+       
+document.getElementById('studentForm').addEventListener('submit', async (e) => {
+    e.preventDefault();
 
-            const studentId = document.getElementById('studentId').value;
-            const name = document.getElementById('name').value;
-            const marks = document.getElementById('marks').value;
-            const resultDiv = document.getElementById('result');
+    const studentId = document.getElementById('studentId').value;
+    const name = document.getElementById('name').value;
+    const marks = document.getElementById('marks').value;
+    const resultDiv = document.getElementById('result');
 
-            // Clear the result area
-            resultDiv.textContent = "";
+    // Clear the result area
+    resultDiv.textContent = "";
 
-            try {
-                // Submit data
-                const submitResponse = await fetch(`${SCRIPT_URL}?action=submit&studentId=${studentId}&name=${name}&marks=${marks}`);
-                const submitData = await submitResponse.json();
+    try {
+        // Submit data to Google Apps Script
+        const submitResponse = await fetch(`${SCRIPT_URL}?action=submit&studentId=${studentId}&name=${name}&marks=${marks}`);
+        const submitData = await submitResponse.json();
 
-                if (submitData.status === "success") {
-                    // Fetch result
-                    const fetchResponse = await fetch(`${SCRIPT_URL}?action=fetch&studentId=${studentId}`);
-                    const fetchData = await fetchResponse.json();
+        if (submitData.status === "success") {
+            // Fetch data from Google Sheets
+            const fetchResponse = await fetch(`${SCRIPT_URL}?action=fetch&studentId=${studentId}`);
+            const fetchData = await fetchResponse.json();
 
-                    if (fetchData.status === "success") {
-                        resultDiv.innerHTML = `
-                            <p><strong>Submission Successful!</strong></p>
-                            <p>Student ID: ${fetchData.studentId}</p>
-                            <p>Name: ${fetchData.name}</p>
-                            <p>Marks: ${fetchData.marks}</p>
-                            <p>Result: ${fetchData.result}</p>`;
-                        resultDiv.style.color = "green";
-                    } else {
-                        throw new Error(fetchData.message);
-                    }
-                } else {
-                    throw new Error(submitData.message);
-                }
-            } catch (error) {
-                console.error(error);
-                resultDiv.textContent = "Error: " + error.message;
-                resultDiv.style.color = "red";
+            if (fetchData.status === "success") {
+                resultDiv.innerHTML = `
+                    <p><strong>Submission Successful!</strong></p>
+                    <p>Student ID: ${fetchData.studentId}</p>
+                    <p>Name: ${fetchData.name}</p>
+                    <p>Marks: ${fetchData.marks}</p>
+                    <p>Result: ${fetchData.result}</p>`;
+                resultDiv.style.color = "green";
+            } else {
+                throw new Error(fetchData.message);
             }
-        });
+        } else {
+            throw new Error(submitData.message);
+        }
+    } catch (error) {
+        console.error(error);
+        resultDiv.textContent = "Error: " + error.message;
+        resultDiv.style.color = "red";
+    }
+});
     </script>
 </body>
 </html>
